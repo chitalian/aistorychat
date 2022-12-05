@@ -238,7 +238,7 @@ export default function Home() {
               </div>
             ))}
         </div>
-        <div className="fixed bottom-0 w-full pb-5 pt-2 dark:bg-black bg-white flex flex-col gap-3">
+        <div className="fixed bottom-0 w-full pb-5 pt-2 dark:bg-black bg-white flex flex-col gap-3 justify-center items-center">
           <div className="flex flex-row justify-center gap-2 mx-auto w-full">
             <textarea
               disabled={isLoading}
