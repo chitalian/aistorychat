@@ -194,6 +194,12 @@ export default function Home() {
         .catch((e) => {
           setIsLoading(false);
           console.log("error", e);
+          alert(
+            "Error getting response.. Please note, " +
+              "chatGPT API is not officially supported " +
+              "and this is using a reversed engineered API.\n" +
+              "Please try again later.\n\n See console for more details."
+          );
         });
     } else {
       getResponse()
@@ -203,6 +209,12 @@ export default function Home() {
         .catch((e) => {
           setIsLoading(false);
           console.log("error", e);
+          alert(
+            "Error getting response.. Please note, " +
+              "chatGPT API is not officially supported " +
+              "and this is using a reversed engineered API.\n" +
+              "Please try again later.\n\n See console for more details."
+          );
         });
     }
   }
