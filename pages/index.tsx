@@ -187,13 +187,23 @@ export default function Home() {
     if (scene === "") {
       setScene(currentInput);
 
-      getInitialResponse().then(() => {
-        setIsLoading(false);
-      });
+      getInitialResponse()
+        .then(() => {
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log("error", e);
+        });
     } else {
-      getResponse().then(() => {
-        setIsLoading(false);
-      });
+      getResponse()
+        .then(() => {
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          console.log("error", e);
+        });
     }
   }
 
