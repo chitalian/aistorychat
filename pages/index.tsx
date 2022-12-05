@@ -282,9 +282,14 @@ export default function Home() {
               )}
             </button>
           </div>
-          <a href="https://twitter.com/justinstorre">
-            <i>twitter</i>
-          </a>
+          <div className="flex flex-row gap-5">
+            <a href="https://twitter.com/justinstorre">
+              <i>twitter</i>
+            </a>
+            <a href="https://github.com/chitalian/aistorychat">
+              <i>github</i>
+            </a>
+          </div>
         </div>
       </main>
     </div>
