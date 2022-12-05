@@ -63,6 +63,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [shifted, setShifted] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, [chatHistory]);
+
   function extraImageData(prompt: string): string {
     const imgPrompt = prompt.split("Image: ")[1].split("\n")[0] as string;
     return imgPrompt;
