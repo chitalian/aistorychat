@@ -111,7 +111,7 @@ export default function Home() {
 
   async function getResponse(): Promise<void> {
     const chatGPT3Data: IChatMessage = await (
-      await fetch("/api/chatGPT3", {
+      await fetch("https://chatgpt.promptzero.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -150,7 +150,7 @@ export default function Home() {
   }
   async function getInitialResponse() {
     const chatGPT3Data = await (
-      await fetch("/api/chatGPT3", {
+      await fetch("https://chatgpt.promptzero.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
