@@ -93,17 +93,11 @@ export class Chatbot {
 
       try {
         let responseLines = (await response.text()).split("\n");
-        console.log("[1/6] RESPONSE LINES", responseLines);
         let lastLine = responseLines[responseLines.length - 5];
-        console.log("[2/6] LAST LINE", lastLine);
         let responseJson = JSON.parse(lastLine.slice(6));
-        console.log("[3/6] RESPONSE JSON", responseJson);
         this.parent_id = responseJson["message"]["id"];
-        console.log("[4/6] PARENT ID", this.parent_id);
         this.conversation_id = responseJson["conversation_id"];
-        console.log("[5/6] CONVERSATION ID", this.conversation_id);
         let message = responseJson["message"]["content"]["parts"][0];
-        console.log("[6/6] MESSAGE", message);
         return {
           message: message,
           conversation_id: this.conversation_id!,
