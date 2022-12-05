@@ -69,7 +69,7 @@ export default function Home() {
   }
   async function getImageUrl(imagePrompt: string): Promise<string> {
     //sleep for 3 seconds
-    await new Promise((r) => setTimeout(r, 3000));
+    await new Promise((r) => setTimeout(r, 8000));
     const { jobId: imageJobId } = await (
       await fetch("/api/queueImage", {
         method: "POST",
