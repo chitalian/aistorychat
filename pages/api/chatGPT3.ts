@@ -15,7 +15,7 @@ export default async function handler(
   const prompt = req.body.prompt;
   const conversationId = req.body.conversation_id ?? null;
   const parentId = req.body.parent_id ?? null;
-  console.log("CONVEERSATION", conversationId);
+  console.log("CONVERSATION", conversationId);
   console.log("PARENT", parentId);
 
   if (!prompt) {
@@ -31,7 +31,7 @@ export default async function handler(
   const api = new Chatbot(
     {
       Authorization: null,
-      session_token: SESSION_TOKEN,
+      session_token: SESSION_TOKEN!,
     },
     conversationId,
     parentId
