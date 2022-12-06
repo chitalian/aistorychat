@@ -311,6 +311,9 @@ export default function Home() {
             <a href="https://github.com/chitalian/aistorychat">
               <i>github</i>
             </a>
+            <a href="https://discord.gg/E4mFcpneUd">
+              <i>discord</i>
+            </a>
           </div>
         </div>
       </main>
