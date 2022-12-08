@@ -525,7 +525,7 @@ export default function Home() {
               className="w-1/2 h-30 border-2 bg-transparent px-2 border-black dark:border-slate-200 resize-none"
               placeholder={
                 scene === ""
-                  ? "Enter the scene you want your story to take place. Ex (Harry Potter, Pokemon, Studio Ghibli) "
+                  ? "Enter the scene you want your story to take place. Ex (Harry Potter, Pokemon, My Neighbor Totoro) "
                   : isLoading
                   ? "Loading... this might take a while..."
                   : "Select one of the options and hit enter or the send button"
