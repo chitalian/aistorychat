@@ -235,6 +235,7 @@ export default function Home() {
     });
     setLoggedInDb((prev) => ({ ...prev, [requestId]: true }));
   }
+
   async function getResponse(): Promise<void> {
     const requestId = uuidv4();
     const [chatGPT3Data, imagePrompt, messageWithoutImage] =
@@ -244,11 +245,13 @@ export default function Home() {
         parent_id: chatHistory[chatHistory.length - 1].parent_id ?? undefined,
       });
 
+    const displayedMessage = `You have choose "${currentInput}"\n\n${messageWithoutImage}`;
+
     setChatHistory((prev) => [
       ...prev,
       {
         ...chatGPT3Data,
-        message: `You have choose "${currentInput}"\n\n${messageWithoutImage}`,
+        message: displayedMessage,
         image_prompt: imagePrompt,
         id: requestId,
         image_url: null,
@@ -262,7 +265,7 @@ export default function Home() {
           currentInput,
           imageUrl,
           imagePrompt,
-          messageWithoutImage,
+          messageWithoutImage: displayedMessage,
         },
         chatGPT3Data
       );
@@ -351,7 +354,7 @@ export default function Home() {
             id: item.id,
             parent_id: item.openai_parent_id,
             conversation_id: item.openai_conversation_id,
-            message: item.response_message,
+            message: item.response_without_image,
             image_prompt: item.image_prompt,
           }))
         );
