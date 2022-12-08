@@ -122,8 +122,6 @@ export default function Home() {
     return imgPrompt;
   }
   async function getImageUrl(imagePrompt: string): Promise<string> {
-    //sleep for 3 seconds
-    await new Promise((r) => setTimeout(r, 8000));
     const { jobId: imageJobId } = await (
       await fetch("/api/queueImage", {
         method: "POST",
@@ -191,8 +189,20 @@ export default function Home() {
         setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
         return image_url;
       })
-      .catch((err) => {
-        console.log("error getting image", err);
+      .catch(async (err) => {
+        console.log("error getting image...retrying", err);
+        const image_url = await getImageUrl(imagePrompt);
+        setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
+        return image_url;
+      })
+      .catch(async (err) => {
+        console.log("error getting image...retrying", err);
+        const image_url = await getImageUrl(imagePrompt);
+        setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
+        return image_url;
+      })
+      .catch(async (err) => {
+        console.log("error getting image... I give up", err);
         return "";
       });
   }
