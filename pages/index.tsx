@@ -1,8 +1,33 @@
 /* eslint-disable @next/next/no-img-element */
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
+import { v4 as uuidv4 } from "uuid";
+import { promptsDB } from "./api/log";
+function getStorageValue<T>(key: string, defaultValue: T) {
+  const saved =
+    typeof window !== "undefined" ? localStorage.getItem(key) : null;
+  if (saved === null) {
+    return defaultValue;
+  }
+  return JSON.parse(saved) as T;
+}
+
+function useLocalStorage<T>(
+  key: string,
+  defaultValue: T
+): [T, Dispatch<SetStateAction<T>>] {
+  const [value, setValue] = useState(() => {
+    return getStorageValue(key, defaultValue);
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+
+  return [value, setValue];
+}
 
 function LoadingSpinner() {
   return (
@@ -29,11 +54,17 @@ function LoadingSpinner() {
 }
 
 interface IChatMessage {
-  parent_id: string;
-  conversation_id: string | null;
+  id: string;
+  parent_id: string | null;
+  conversation_id: string;
   message: string;
-  image_url: string | null;
   image_prompt: string | null;
+}
+
+interface IChatMessageOpenAI {
+  parent_id: string | null;
+  conversation_id: string;
+  message: string;
 }
 
 function getStartingPrompt(input: string): string {
@@ -57,8 +88,15 @@ The scene is ${input}. I start out with 100 health. What is my first set of Even
 }
 
 export default function Home() {
-  const [scene, setScene] = useState("");
-  const [chatHistory, setChatHistory] = useState<IChatMessage[]>([]);
+  const [scene, setScene] = useLocalStorage("scene", "");
+  const [chatHistory, setChatHistory] = useLocalStorage<IChatMessage[]>(
+    "chatHistory",
+    []
+  );
+  const [chatImageLookup, setChatImageLookup] = useLocalStorage<
+    Record<string, string>
+  >("chatImageLookup", {});
+
   const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [shifted, setShifted] = useState(false);
@@ -67,7 +105,7 @@ export default function Home() {
     window.scrollTo(0, document.body.scrollHeight);
   }, [chatHistory]);
 
-  function extraImageData(prompt: string): string {
+  function extractImageData(prompt: string): string {
     const imgPrompt = prompt.split("Image: ")[1].split("\n")[0] as string;
     return imgPrompt;
   }
@@ -109,35 +147,90 @@ export default function Home() {
       .replace("\n\n", "\n");
   }
 
-  async function getResponse(): Promise<void> {
-    const chatGPT3Data: IChatMessage = await (
+  async function requestPrompt(body: {
+    prompt: string;
+    conversation_id?: string;
+    parent_id?: string;
+  }): Promise<[IChatMessageOpenAI, string, string]> {
+    const chatGPT3Data: IChatMessageOpenAI = await (
       await fetch("https://chatgpt.promptzero.com", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          prompt: currentInput,
-          conversation_id: chatHistory[chatHistory.length - 1].conversation_id,
-          parent_id: chatHistory[chatHistory.length - 1].parent_id,
-        }),
+        body: JSON.stringify(body),
       })
     ).json();
-    const imagePrompt = extraImageData(chatGPT3Data.message);
-    const currentSize = chatHistory.length;
-    getImageUrl(imagePrompt).then((image_url) =>
-      setChatHistory((prev) => {
-        const newChatHistory = [...prev];
-        newChatHistory[currentSize].image_url = image_url;
-        console.log("updated new chat history", newChatHistory);
-        return newChatHistory;
-      })
-    );
 
+    const imagePrompt = extractImageData(chatGPT3Data.message);
     const messageWithoutImage = cleanUpPrompt(
       chatGPT3Data.message,
       imagePrompt
     );
+    return [chatGPT3Data, imagePrompt, messageWithoutImage];
+  }
+
+  async function setImageFor(
+    imagePrompt: string,
+    requestId: string
+  ): Promise<string> {
+    return await getImageUrl(imagePrompt)
+      .then((image_url) => {
+        setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
+        return image_url;
+      })
+      .catch((err) => {
+        console.log("error getting image", err);
+        return "";
+      });
+  }
+
+  async function logCurrentSpot(
+    {
+      requestId,
+      currentInput,
+      imageUrl,
+      imagePrompt,
+      messageWithoutImage,
+    }: {
+      requestId: string;
+      currentInput: string;
+      imageUrl: string;
+      imagePrompt: string;
+      messageWithoutImage: string;
+    },
+    chatGPT3Data: IChatMessageOpenAI
+  ) {
+    const body: promptsDB = {
+      id: requestId,
+      input: currentInput,
+      image_url: imageUrl,
+      image_prompt: imagePrompt,
+      response_without_image: messageWithoutImage,
+      response_message: chatGPT3Data.message,
+      last_id:
+        chatHistory.length === 0
+          ? null
+          : chatHistory[chatHistory.length - 1].id,
+      openai_parent_id: chatGPT3Data.parent_id,
+      openai_conversation_id: chatGPT3Data.conversation_id,
+    };
+    await fetch("/api/log", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }
+  async function getResponse(): Promise<void> {
+    const requestId = uuidv4();
+    const [chatGPT3Data, imagePrompt, messageWithoutImage] =
+      await requestPrompt({
+        prompt: currentInput,
+        conversation_id: chatHistory[chatHistory.length - 1].conversation_id,
+        parent_id: chatHistory[chatHistory.length - 1].parent_id ?? undefined,
+      });
 
     setChatHistory((prev) => [
       ...prev,
@@ -145,40 +238,51 @@ export default function Home() {
         ...chatGPT3Data,
         message: `You have choose "${currentInput}"\n\n${messageWithoutImage}`,
         image_prompt: imagePrompt,
+        id: requestId,
+        image_url: null,
       },
     ]);
+
+    setImageFor(imagePrompt, requestId).then((imageUrl) => {
+      logCurrentSpot(
+        {
+          requestId,
+          currentInput,
+          imageUrl,
+          imagePrompt,
+          messageWithoutImage,
+        },
+        chatGPT3Data
+      );
+    });
   }
   async function getInitialResponse() {
-    const chatGPT3Data = await (
-      await fetch("https://chatgpt.promptzero.com", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: getStartingPrompt(currentInput),
-        }),
-      })
-    ).json();
-    console.log("chatGPT3Data", chatGPT3Data);
-
-    const imagePrompt = extraImageData(chatGPT3Data.message);
-    const image_url = await getImageUrl(imagePrompt);
-
-    const messageWithoutImage = cleanUpPrompt(
-      chatGPT3Data.message,
-      imagePrompt
-    );
-
-    setChatHistory((prev) => [
-      ...prev,
+    const requestId = uuidv4();
+    const startingPrompt = getStartingPrompt(currentInput);
+    const [chatGPT3Data, imagePrompt, messageWithoutImage] =
+      await requestPrompt({
+        prompt: startingPrompt,
+      });
+    setChatHistory([
       {
         ...chatGPT3Data,
         message: `${messageWithoutImage}`,
-        image_url,
         image_prompt: imagePrompt,
+        id: requestId,
       },
     ]);
+    setImageFor(imagePrompt, requestId).then((imageUrl) => {
+      logCurrentSpot(
+        {
+          requestId,
+          currentInput,
+          imageUrl,
+          imagePrompt,
+          messageWithoutImage,
+        },
+        chatGPT3Data
+      );
+    });
   }
 
   function submitRequestToBackend() {
@@ -218,6 +322,9 @@ export default function Home() {
         });
     }
   }
+  function hasLocalStorage(): boolean {
+    return scene !== "" || chatHistory.length > 0;
+  }
 
   return (
     <div className="dark:bg-black dark:text-slate-200">
@@ -228,8 +335,24 @@ export default function Home() {
       </Head>
       {/* Make a text box that always stays on the bottom tailwind*/}
       <main className="flex flex-col w-full flex-1 text-center min-h-screen ">
-        <h1 className="fixed top-0 text-center text-4xl font-bold w-full dark:bg-black bg-white py-5">
-          {scene === "" ? "AI Story Chat" : `Welcome to ${scene}`}
+        <h1 className="fixed top-0 text-center text-4xl font-bold w-full dark:bg-black bg-white py-5 border-b">
+          {hasLocalStorage() ? (
+            <div className="flex flex-row justify-between px-5 items-center">
+              <div>{`Welcome to ${scene}`}</div>
+              <button
+                className="text-sm border p-3"
+                onClick={() => {
+                  setScene("");
+                  setChatHistory([]);
+                  setChatImageLookup({});
+                }}
+              >
+                New game
+              </button>
+            </div>
+          ) : (
+            "AI Story Chat"
+          )}
         </h1>
         <div className="flex flex-col-reverse w-full flex-1 text-center my-40 overflow-auto gap-5 justify-center items-center">
           {chatHistory
@@ -240,15 +363,15 @@ export default function Home() {
                 key={chatMessage.conversation_id}
                 className="flex flex-col w-5/6 whitespace-pre-wrap text-left border-2 p-5 justify-center items-center"
               >
-                {chatMessage.image_url === null ||
-                chatMessage.image_url === "" ||
-                chatMessage.image_url === undefined ? (
+                {chatImageLookup[chatMessage.id] === null ||
+                chatImageLookup[chatMessage.id] === "" ||
+                chatImageLookup[chatMessage.id] === undefined ? (
                   <div className="h-[500px] w-[500px] flex flex-col justify-center items-center">
                     <LoadingSpinner />
                   </div>
                 ) : (
                   <img
-                    src={chatMessage.image_url}
+                    src={chatImageLookup[chatMessage.id]}
                     width={500}
                     height={500}
                     alt={chatMessage.image_prompt ?? ""}
@@ -256,7 +379,7 @@ export default function Home() {
                 )}
                 <i className="text-xs my-2">{chatMessage.image_prompt}</i>
 
-                <text>{chatMessage.message}</text>
+                <p>{chatMessage.message}</p>
               </div>
             ))}
         </div>
