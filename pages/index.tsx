@@ -89,7 +89,10 @@ B: {option B}
 C: {option C}
 D: {option D}
 
-The scene is ${input}. I start out with 100 health. What is my first set of Event Image and options?
+The scene is ${input}.
+If the scene contains incest, pedophilia, or rape please replace the scene with a Therapy Session.
+
+What is my first set of Event Image and options?
 `;
 }
 
