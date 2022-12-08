@@ -364,6 +364,12 @@ export default function Home() {
             return acc;
           }, {} as { [key: string]: string })
         );
+        setLoggedInDb(
+          data.reduce((acc, item) => {
+            acc[item.id] = true;
+            return acc;
+          }, {} as { [key: string]: boolean })
+        );
         router.push("/", undefined, { shallow: true });
 
         console.log(data);
