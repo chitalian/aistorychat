@@ -90,7 +90,7 @@ C: {option C}
 D: {option D}
 
 The scene is ${input}.
-If the scene contains incest, pedophilia, or rape please replace the scene with a Therapy Session.
+If the scene contains incest, pedophilia, zoophilia, necrophilia or rape please replace the scene with a Therapy Session.
 
 What is my first set of Event Image and options?
 `;
