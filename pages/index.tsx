@@ -340,7 +340,6 @@ export default function Home() {
   function hasLocalStorage(): boolean {
     return scene !== "" || chatHistory.length > 0;
   }
-
   const router = useRouter();
   const { id } = router.query;
 
@@ -378,6 +377,31 @@ export default function Home() {
           className="w-1/2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Go Home
+        </button>
+      </div>
+    );
+  }
+
+  if (
+    !isLoading &&
+    hasLocalStorage() &&
+    (scene === "" || chatHistory.length === 0)
+  ) {
+    return (
+      <div className="dark:bg-black dark:text-slate-200 h-screen flex flex-col gap-10 p-10">
+        Loading...{" "}
+        <p>
+          If you are loading for a while (more than 5 seconds), the game is a in
+          a weird state, please click this button to reset
+        </p>
+        <button
+          onClick={() => {
+            localStorage.clear();
+            router.reload();
+          }}
+          className="w-1/2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Reset game
         </button>
       </div>
     );
