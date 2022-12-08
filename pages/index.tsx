@@ -5,26 +5,32 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { v4 as uuidv4 } from "uuid";
 import { promptsDB } from "./api/log";
-function getStorageValue<T>(key: string, defaultValue: T) {
-  const saved =
-    typeof window !== "undefined" ? localStorage.getItem(key) : null;
-  if (saved === null) {
-    return defaultValue;
-  }
-  return JSON.parse(saved) as T;
-}
+import { CiTwitter } from "react-icons/ci";
+import { BiCopy } from "react-icons/bi";
+import { BiUndo } from "react-icons/bi";
+import { useRouter } from "next/router";
 
 function useLocalStorage<T>(
   key: string,
   defaultValue: T
 ): [T, Dispatch<SetStateAction<T>>] {
-  const [value, setValue] = useState(() => {
-    return getStorageValue(key, defaultValue);
-  });
+  const [checkedLocalStorage, setCheckedLocalStorage] = useState(false);
+  const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
+    if (checkedLocalStorage) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  }, [key, value, checkedLocalStorage]);
+
+  useEffect(() => {
+    const saved =
+      typeof window !== "undefined" ? localStorage.getItem(key) : null;
+    if (saved !== null) {
+      setValue(JSON.parse(saved) as T);
+    }
+    setCheckedLocalStorage(true);
+  }, [key]);
 
   return [value, setValue];
 }
@@ -93,10 +99,15 @@ export default function Home() {
     "chatHistory",
     []
   );
+
   const [chatImageLookup, setChatImageLookup] = useLocalStorage<
     Record<string, string>
   >("chatImageLookup", {});
 
+  const [loggedInDB, setLoggedInDb] = useLocalStorage<Record<string, boolean>>(
+    "loggedInDB",
+    {}
+  );
   const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [shifted, setShifted] = useState(false);
@@ -222,6 +233,7 @@ export default function Home() {
       },
       body: JSON.stringify(body),
     });
+    setLoggedInDb((prev) => ({ ...prev, [requestId]: true }));
   }
   async function getResponse(): Promise<void> {
     const requestId = uuidv4();
@@ -326,6 +338,48 @@ export default function Home() {
     return scene !== "" || chatHistory.length > 0;
   }
 
+  const router = useRouter();
+  const { id } = router.query;
+
+  if (id) {
+    fetch("/api/history?id=" + id)
+      .then((res) => res.json())
+      .then((data: promptsDB[]) => {
+        setScene(data[0].input);
+        setChatHistory(
+          data.map((item) => ({
+            id: item.id,
+            parent_id: item.openai_parent_id,
+            conversation_id: item.openai_conversation_id,
+            message: item.response_message,
+            image_prompt: item.image_prompt,
+          }))
+        );
+        setChatImageLookup(
+          data.reduce((acc, item) => {
+            acc[item.id] = item.image_url;
+            return acc;
+          }, {} as { [key: string]: string })
+        );
+        router.push("/", undefined, { shallow: true });
+
+        console.log(data);
+      });
+    return (
+      <div className="dark:bg-black dark:text-slate-200 h-screen flex flex-col gap-10 p-10">
+        Loading... {id}
+        <button
+          onClick={() => {
+            router.push("/", undefined, { shallow: true });
+          }}
+          className="w-1/2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="dark:bg-black dark:text-slate-200">
       <Head>
@@ -360,7 +414,7 @@ export default function Home() {
             .reverse()
             .map((chatMessage) => (
               <div
-                key={chatMessage.conversation_id}
+                key={chatMessage.id}
                 className="flex flex-col w-5/6 whitespace-pre-wrap text-left border-2 p-5 justify-center items-center"
               >
                 {chatImageLookup[chatMessage.id] === null ||
@@ -380,6 +434,37 @@ export default function Home() {
                 <i className="text-xs my-2">{chatMessage.image_prompt}</i>
 
                 <p>{chatMessage.message}</p>
+                <div className="flex flex-row justify-end items-end w-full">
+                  {loggedInDB[chatMessage.id] ? (
+                    <div className="flex flex-row w-full justify-end mt-2">
+                      <div className="flex flex-row gap-3">
+                        <div
+                          className="cursor-pointer"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              `https://aistorychat.com?id=${chatMessage.id}`
+                            );
+                          }}
+                        >
+                          <BiCopy size={24} />
+                        </div>
+                        <a
+                          href={`https://twitter.com/intent/tweet?text=${
+                            `My new story about ${scene}! ` +
+                            "https://aistorychat.com?id=" +
+                            chatMessage.id
+                          }`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <CiTwitter size={24} />
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <LoadingSpinner />
+                  )}
+                </div>
               </div>
             ))}
         </div>

@@ -1,6 +1,5 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-// import { supabaseServer } from "../../lib/supabaseServer";
+import { supabaseServer } from "../../lib/supabaseServer";
 
 export interface promptsDB {
   id: string;
@@ -21,16 +20,16 @@ export default async function handler(
   const body: promptsDB = req.body;
   console.log("Logging prompt", body);
 
-  // const { data, error } = await supabaseServer
-  //   .from("prompts")
-  //   .insert(body)
-  //   .select("id")
-  //   .single();
-  // if (error) {
-  //   console.log(error);
-  //   res.status(405).json({ error: error.message });
-  //   return;
-  // }
+  const { data, error } = await supabaseServer
+    .from("prompts")
+    .insert(body)
+    .select("id")
+    .single();
+  if (error) {
+    console.log(error);
+    res.status(405).json({ error: error.message });
+    return;
+  }
 
   res.status(200).json({});
 }
