@@ -100,6 +100,7 @@ export default function Home() {
     []
   );
 
+  const [error, setError] = useState("");
   const [chatImageLookup, setChatImageLookup] = useLocalStorage<
     Record<string, string>
   >("chatImageLookup", {});
@@ -313,7 +314,7 @@ export default function Home() {
         .catch((e) => {
           setIsLoading(false);
           console.log("error", e);
-          alert(
+          setError(
             "Error getting response.. Please note, " +
               "chatGPT API is not officially supported " +
               "and this is using a reversed engineered API.\n" +
@@ -328,7 +329,7 @@ export default function Home() {
         .catch((e) => {
           setIsLoading(false);
           console.log("error", e);
-          alert(
+          setError(
             "Error getting response.. Please note, " +
               "chatGPT API is not officially supported " +
               "and this is using a reversed engineered API.\n" +
@@ -418,18 +419,21 @@ export default function Home() {
       <main className="flex flex-col w-full flex-1 text-center min-h-screen ">
         <h1 className="fixed top-0 text-center text-4xl font-bold w-full dark:bg-black bg-white py-5 border-b">
           {hasLocalStorage() ? (
-            <div className="flex flex-row justify-between px-5 items-center">
-              <div>{`Welcome to ${scene}`}</div>
-              <button
-                className="text-sm border p-3"
-                onClick={() => {
-                  setScene("");
-                  setChatHistory([]);
-                  setChatImageLookup({});
-                }}
-              >
-                New game
-              </button>
+            <div className="flex flex-col w-full">
+              <div className="flex flex-row justify-between px-5 items-center">
+                <div>{`Welcome to ${scene}`}</div>
+                <button
+                  className="text-sm border p-3"
+                  onClick={() => {
+                    setScene("");
+                    setChatHistory([]);
+                    setChatImageLookup({});
+                  }}
+                >
+                  New game
+                </button>
+              </div>
+              <i className="text-red-500 text-xs">{error}</i>
             </div>
           ) : (
             "AI Story Chat"
