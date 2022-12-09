@@ -56,6 +56,7 @@ Make sure the story does not loop back to the same scene.
 Keep the story fun, interesting and engaging for me.
 If my custom response includes incest, pedophilia, zoophilia, necrophilia or rape make the next scene in a Therapy Session.
 If my custom response includes anything does not make sense given the scene or follow logical sense in the current story, make ask me to choose a different response, and output the previous example as well.
+Make sure the story options are written in first person.
 Add a section before each choice describing the events as "Event". 
 Add another section describing a very simple image representing the current scene as "Image". 
 
