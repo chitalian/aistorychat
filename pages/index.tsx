@@ -10,34 +10,6 @@ import { BiCopy } from "react-icons/bi";
 import { BiUndo } from "react-icons/bi";
 import { useRouter } from "next/router";
 
-function useLocalStorage<T>(
-  key: string,
-  defaultValue: T,
-  ignoreOnFirstLoad: boolean = false
-): [T, Dispatch<SetStateAction<T>>] {
-  const [checkedLocalStorage, setCheckedLocalStorage] = useState(false);
-  const [value, setValue] = useState(defaultValue);
-
-  useEffect(() => {
-    if (checkedLocalStorage) {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-  }, [key, value, checkedLocalStorage]);
-
-  useEffect(() => {
-    if (!ignoreOnFirstLoad) {
-      const saved =
-        typeof window !== "undefined" ? localStorage.getItem(key) : null;
-      if (saved !== null) {
-        setValue(JSON.parse(saved) as T);
-      }
-      setCheckedLocalStorage(true);
-    }
-  }, [key, ignoreOnFirstLoad]);
-
-  return [value, setValue];
-}
-
 function LoadingSpinner() {
   return (
     <div role="status">
@@ -102,24 +74,15 @@ What is my first set of Event Image and options?
 export default function Home() {
   const router = useRouter();
   const { id } = router.query;
-  const ignoreOnFirstLoad = id !== undefined;
-  const [scene, setScene] = useLocalStorage("scene", "", ignoreOnFirstLoad);
-  const [chatHistory, setChatHistory] = useLocalStorage<IChatMessage[]>(
-    "chatHistory",
-    [],
-    ignoreOnFirstLoad
-  );
+  const [scene, setScene] = useState("");
+  const [chatHistory, setChatHistory] = useState<IChatMessage[]>([]);
 
   const [error, setError] = useState("");
-  const [chatImageLookup, setChatImageLookup] = useLocalStorage<
+  const [chatImageLookup, setChatImageLookup] = useState<
     Record<string, string>
-  >("chatImageLookup", {}, ignoreOnFirstLoad);
+  >({});
 
-  const [loggedInDB, setLoggedInDb] = useLocalStorage<Record<string, boolean>>(
-    "loggedInDB",
-    {},
-    ignoreOnFirstLoad
-  );
+  const [loggedInDB, setLoggedInDb] = useState<Record<string, boolean>>({});
   const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [shifted, setShifted] = useState(false);
