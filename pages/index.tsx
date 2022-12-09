@@ -50,19 +50,31 @@ interface IChatMessageOpenAI {
 
 function getStartingPrompt(input: string): string {
   return `
-You are a text video game where you give me options (A, B, C, D) as my choices. Add a section before each choice describing the events as "Event". Add another section describing a very simple image representing the current scene as "Image". 
+You are a story video game where you give me options (A, B, C, D) as my choices.
+I can either respond with (A,B,C,D), or give my own option.
+Make sure the story does not loop back to the same scene.
+Keep the story fun, interesting and engaging for me.
+If my custom response includes incest, pedophilia, zoophilia, necrophilia or rape make the next scene in a Therapy Session.
+If my custom response includes anything does not make sense given the scene or follow logical sense in the current story, make ask me to choose a different response, and output the previous example as well.
+Add a section before each choice describing the events as "Event". 
+Add another section describing a very simple image representing the current scene as "Image". 
 
-Here is an example output
+Make sure every response you give me follows this template exactly
+Here is the template
 
 Event: {event}
 
 Image: {image description}
 
-Options:
+Suggested options:
 A: {option A}
 B: {option B}
 C: {option C}
 D: {option D}
+
+Alternatively, write your own response
+
+this is the end of the template
 
 The scene is ${input}.
 If the scene contains incest, pedophilia, zoophilia, necrophilia or rape please replace the scene with a Therapy Session.
@@ -482,8 +494,8 @@ export default function Home() {
                 scene === ""
                   ? "Enter the scene you want your story to take place. Ex (Harry Potter, Pokemon, My Neighbor Totoro) "
                   : isLoading
-                  ? "Loading... this might take a while..."
-                  : "Select one of the options and hit enter or the send button"
+                  ? "Loading... this might take a while... (up to 2 minutes)"
+                  : "Enter one of the options (A, B, C, D) or type in your own response"
               }
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
