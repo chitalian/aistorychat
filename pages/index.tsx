@@ -95,7 +95,10 @@ export default function Home() {
     const imgPrompt = prompt.split("Image: ")[1].split("\n")[0] as string;
     return imgPrompt;
   }
-  async function getImageUrl(imagePrompt: string): Promise<string> {
+  async function getImageUrl(
+    scene: string,
+    imagePrompt: string
+  ): Promise<string> {
     const { jobId: imageJobId } = await (
       await fetch("/api/queueImage", {
         method: "POST",
@@ -109,18 +112,28 @@ export default function Home() {
         }),
       })
     ).json();
-    const { url: image_url } = await (
-      await fetch(`/api/imageResult`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          jobId: imageJobId,
-        }),
-      })
-    ).json();
-    return image_url;
+
+    let retries = 5;
+    while (retries > 0) {
+      retries--;
+      const body: { url: string } | null = await (
+        await fetch(`/api/imageResult`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            jobId: imageJobId,
+          }),
+        })
+      ).json();
+      if (body?.url) {
+        return body.url;
+      }
+      // Wait 1 second before retrying
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+    return "";
   }
 
   function cleanUpPrompt(prompt: string, imagePrompt: string): string {
@@ -155,23 +168,24 @@ export default function Home() {
   }
 
   async function setImageFor(
+    scene: string,
     imagePrompt: string,
     requestId: string
   ): Promise<string> {
-    return await getImageUrl(imagePrompt)
+    return await getImageUrl(scene, imagePrompt)
       .then((image_url) => {
         setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
         return image_url;
       })
       .catch(async (err) => {
         console.log("error getting image...retrying", err);
-        const image_url = await getImageUrl(imagePrompt);
+        const image_url = await getImageUrl(scene, imagePrompt);
         setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
         return image_url;
       })
       .catch(async (err) => {
         console.log("error getting image...retrying", err);
-        const image_url = await getImageUrl(imagePrompt);
+        const image_url = await getImageUrl(scene, imagePrompt);
         setChatImageLookup((prev) => ({ ...prev, [requestId]: image_url }));
         return image_url;
       })
@@ -243,7 +257,7 @@ export default function Home() {
       },
     ]);
 
-    setImageFor(imagePrompt, requestId).then((imageUrl) => {
+    setImageFor(scene, imagePrompt, requestId).then((imageUrl) => {
       logCurrentSpot(
         {
           requestId,
@@ -271,7 +285,7 @@ export default function Home() {
         id: requestId,
       },
     ]);
-    setImageFor(imagePrompt, requestId).then((imageUrl) => {
+    setImageFor(currentInput, imagePrompt, requestId).then((imageUrl) => {
       logCurrentSpot(
         {
           requestId,
