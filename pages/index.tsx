@@ -12,7 +12,8 @@ import { useRouter } from "next/router";
 
 function useLocalStorage<T>(
   key: string,
-  defaultValue: T
+  defaultValue: T,
+  ignoreOnFirstLoad: boolean = false
 ): [T, Dispatch<SetStateAction<T>>] {
   const [checkedLocalStorage, setCheckedLocalStorage] = useState(false);
   const [value, setValue] = useState(defaultValue);
@@ -24,13 +25,15 @@ function useLocalStorage<T>(
   }, [key, value, checkedLocalStorage]);
 
   useEffect(() => {
-    const saved =
-      typeof window !== "undefined" ? localStorage.getItem(key) : null;
-    if (saved !== null) {
-      setValue(JSON.parse(saved) as T);
+    if (!ignoreOnFirstLoad) {
+      const saved =
+        typeof window !== "undefined" ? localStorage.getItem(key) : null;
+      if (saved !== null) {
+        setValue(JSON.parse(saved) as T);
+      }
+      setCheckedLocalStorage(true);
     }
-    setCheckedLocalStorage(true);
-  }, [key]);
+  }, [key, ignoreOnFirstLoad]);
 
   return [value, setValue];
 }
@@ -97,20 +100,25 @@ What is my first set of Event Image and options?
 }
 
 export default function Home() {
-  const [scene, setScene] = useLocalStorage("scene", "");
+  const router = useRouter();
+  const { id } = router.query;
+  const ignoreOnFirstLoad = id !== undefined;
+  const [scene, setScene] = useLocalStorage("scene", "", ignoreOnFirstLoad);
   const [chatHistory, setChatHistory] = useLocalStorage<IChatMessage[]>(
     "chatHistory",
-    []
+    [],
+    ignoreOnFirstLoad
   );
 
   const [error, setError] = useState("");
   const [chatImageLookup, setChatImageLookup] = useLocalStorage<
     Record<string, string>
-  >("chatImageLookup", {});
+  >("chatImageLookup", {}, ignoreOnFirstLoad);
 
   const [loggedInDB, setLoggedInDb] = useLocalStorage<Record<string, boolean>>(
     "loggedInDB",
-    {}
+    {},
+    ignoreOnFirstLoad
   );
   const [currentInput, setCurrentInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -354,8 +362,6 @@ export default function Home() {
   function hasLocalStorage(): boolean {
     return scene !== "" || chatHistory.length > 0;
   }
-  const router = useRouter();
-  const { id } = router.query;
 
   if (id) {
     fetch("/api/history?id=" + id)
@@ -387,6 +393,7 @@ export default function Home() {
 
         console.log(data);
       });
+
     return (
       <div className="dark:bg-black dark:text-slate-200 h-screen flex flex-col gap-10 p-10">
         Loading... {id}
