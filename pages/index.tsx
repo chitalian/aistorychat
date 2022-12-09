@@ -367,6 +367,8 @@ export default function Home() {
     fetch("/api/history?id=" + id)
       .then((res) => res.json())
       .then((data: promptsDB[]) => {
+        //clear local storage
+        localStorage.clear();
         setScene(data[0].input);
         setChatHistory(
           data.map((item) => ({
