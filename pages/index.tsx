@@ -322,9 +322,6 @@ export default function Home() {
         });
     }
   }
-  function hasLocalStorage(): boolean {
-    return scene !== "" || chatHistory.length > 0;
-  }
 
   if (id) {
     localStorage.clear();
@@ -373,31 +370,6 @@ export default function Home() {
     );
   }
 
-  if (
-    !isLoading &&
-    hasLocalStorage() &&
-    (scene === "" || chatHistory.length === 0)
-  ) {
-    return (
-      <div className="dark:bg-black dark:text-slate-200 h-screen flex flex-col gap-10 p-10">
-        Loading...{" "}
-        <p>
-          If you are loading for a while (more than 5 seconds), the game is a in
-          a weird state, please click this button to reset
-        </p>
-        <button
-          onClick={() => {
-            localStorage.clear();
-            router.reload();
-          }}
-          className="w-1/2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Reset game
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="dark:bg-black dark:text-slate-200">
       <Head>
@@ -408,16 +380,14 @@ export default function Home() {
       {/* Make a text box that always stays on the bottom tailwind*/}
       <main className="flex flex-col w-full flex-1 text-center min-h-screen ">
         <h1 className="fixed top-0 text-center text-4xl font-bold w-full dark:bg-black bg-white py-5 border-b">
-          {hasLocalStorage() ? (
+          {scene !== "" ? (
             <div className="flex flex-col w-full">
               <div className="flex flex-row justify-between px-5 items-center">
                 <div>{`Welcome to ${scene}`}</div>
                 <button
                   className="text-sm border p-3"
                   onClick={() => {
-                    setScene("");
-                    setChatHistory([]);
-                    setChatImageLookup({});
+                    router.reload();
                   }}
                 >
                   New game
