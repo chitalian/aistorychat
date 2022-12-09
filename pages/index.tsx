@@ -171,6 +171,7 @@ export default function Home() {
         body: JSON.stringify(body),
       })
     ).json();
+    console.log("chatGPT3Data", chatGPT3Data);
 
     const imagePrompt = extractImageData(chatGPT3Data.message);
     const messageWithoutImage = cleanUpPrompt(
