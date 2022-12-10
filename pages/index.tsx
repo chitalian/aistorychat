@@ -71,8 +71,7 @@ A: {option A}
 B: {option B}
 C: {option C}
 D: {option D}
-
-Alternatively, write your own response.
+E: {Custom response}
 
 END - this is the end of the template
 
