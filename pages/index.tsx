@@ -406,6 +406,13 @@ export default function Home() {
       {/* Make a text box that always stays on the bottom tailwind*/}
       <main className="flex flex-col w-full flex-1 text-center min-h-screen ">
         <h1 className="fixed top-0 text-center text-4xl font-bold w-full dark:bg-black bg-white py-5 border-b">
+          <a href="https://discord.gg/E4mFcpneUd">
+            <div className="text-lg border border-yellow-500 mx-24">
+              OpenAI has implemented cloudflare rate limiting for chatGPT. We
+              are currently looking to fix this. Please check the discord for
+              update
+            </div>
+          </a>
           {scene !== "" ? (
             <div className="flex flex-col w-full">
               <div className="flex flex-row justify-between px-5 items-center">
