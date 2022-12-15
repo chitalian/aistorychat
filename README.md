@@ -1,3 +1,8 @@
+> # UPDATE 12/14/2022
+> Until ChatGPT has a better auth client solution or provides an API. I am pausing all work on this project and am working on a GPT3 alternative solution here https://github.com/chitalian/dreamsubmarine
+
+
+
 ## Getting Started
 
 First, run the development server:
