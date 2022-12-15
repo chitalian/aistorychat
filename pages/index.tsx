@@ -83,6 +83,7 @@ What is my first set of Event Image and options?
 }
 
 export default function Home() {
+  const [showWarning, setShowWarning] = useState(true);
   const router = useRouter();
   const { id } = router.query;
   const [scene, setScene] = useState("");
@@ -406,13 +407,46 @@ export default function Home() {
       {/* Make a text box that always stays on the bottom tailwind*/}
       <main className="flex flex-col w-full flex-1 text-center min-h-screen ">
         <h1 className="fixed top-0 text-center text-4xl font-bold w-full dark:bg-black bg-white py-5 border-b">
-          <a href="https://discord.gg/E4mFcpneUd">
-            <div className="text-lg border border-yellow-500 mx-24">
-              OpenAI has implemented cloudflare rate limiting for chatGPT. We
-              are currently looking to fix this. Please check the discord for
-              update
+          {showWarning && (
+            <div>
+              <div
+                className="text-sm"
+                onClick={() => {
+                  setShowWarning(!showWarning);
+                }}
+              >
+                close warnings
+              </div>
+              <div className="text-base border border-green-500 mx-24 my-5 p-5 text-justify">
+                <a href="https://dreamsubmarine.com">
+                  (2022/12/16): GPT3 AI Story Chat alternative:
+                  dreamsubmarine.com
+                </a>
+              </div>
+              <div className="text-base border border-yellow-500 mx-24 my-5 p-5 text-justify">
+                (2022/12/16): I am pausing work on this project completely, but
+                will keep the server alive so everyone can have access to their
+                stories. I will keep my eye out for a new authentication
+                exploit, but for now it looks like we will have to wait until
+                OpenAI officially releases a ChatGPT API
+              </div>
+              <div className="text-base border border-yellow-500 mx-24 my-5 p-5 text-justify">
+                (2022/12/13): OpenAI has implemented cloudflare rate limiting
+                for chatGPT, making AI Story Chat unusable
+                <div>
+                  Please follow the{" "}
+                  <a
+                    href="https://discord.gg/E4mFcpneUd"
+                    className="text-indigo-600"
+                  >
+                    discord
+                  </a>{" "}
+                  for more information and updates
+                </div>
+              </div>
             </div>
-          </a>
+          )}
+
           {scene !== "" ? (
             <div className="flex flex-col w-full">
               <div className="flex flex-row justify-between px-5 items-center">
