@@ -417,31 +417,33 @@ export default function Home() {
               >
                 close warnings
               </div>
-              <div className="text-base border border-green-500 mx-24 my-5 p-5 text-justify">
-                <a href="https://dreamsubmarine.com">
-                  (2022/12/16): GPT3 AI Story Chat alternative:
-                  dreamsubmarine.com
-                </a>
-              </div>
-              <div className="text-base border border-yellow-500 mx-24 my-5 p-5 text-justify">
-                (2022/12/16): I am pausing work on this project completely, but
-                will keep the server alive so everyone can have access to their
-                stories. I will keep my eye out for a new authentication
-                exploit, but for now it looks like we will have to wait until
-                OpenAI officially releases a ChatGPT API
-              </div>
-              <div className="text-base border border-yellow-500 mx-24 my-5 p-5 text-justify">
-                (2022/12/13): OpenAI has implemented cloudflare rate limiting
-                for chatGPT, making AI Story Chat unusable
-                <div>
-                  Please follow the{" "}
-                  <a
-                    href="https://discord.gg/E4mFcpneUd"
-                    className="text-indigo-600"
-                  >
-                    discord
-                  </a>{" "}
-                  for more information and updates
+              <div className="max-h-[50vh] overflow-scroll  mx-2 md:mx-24 my-3">
+                <div className="text-base border border-green-500 my-5 p-5 text-justify">
+                  <a href="https://dreamsubmarine.com">
+                    (2022/12/16): GPT3 AI Story Chat alternative:
+                    dreamsubmarine.com
+                  </a>
+                </div>
+                <div className="text-base border border-yellow-500 my-5 p-5 text-justify">
+                  (2022/12/16): I am pausing work on this project completely,
+                  but will keep the server alive so everyone can have access to
+                  their stories. I will keep my eye out for a new authentication
+                  exploit, but for now it looks like we will have to wait until
+                  OpenAI officially releases a ChatGPT API
+                </div>
+                <div className="text-base border border-yellow-500 my-5 p-5 text-justify">
+                  (2022/12/13): OpenAI has implemented cloudflare rate limiting
+                  for chatGPT, making AI Story Chat unusable
+                  <div>
+                    Please follow the{" "}
+                    <a
+                      href="https://discord.gg/E4mFcpneUd"
+                      className="text-indigo-600"
+                    >
+                      discord
+                    </a>{" "}
+                    for more information and updates
+                  </div>
                 </div>
               </div>
             </div>
